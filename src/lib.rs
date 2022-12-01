@@ -90,4 +90,12 @@ pub mod test_helpers {
         inp.for_each(|item| writeln!(file, "{}", item).expect("Could not write to file"));
         (dir, filepath)
     }
+
+    pub fn create_example_file(inp: &str, dir: Option<TempDir>) -> (TempDir, impl AsRef<Path>) {
+        let dir = dir.unwrap_or_else(|| tempdir().expect("Failed to create tempdir"));
+        let filepath = dir.path().join("tempinput.txt");
+        let mut file = File::create(&filepath).expect("Could not create file");
+        write!(file, "{}", inp).expect("Could not write to file");
+        (dir, filepath)
+    }
 }
