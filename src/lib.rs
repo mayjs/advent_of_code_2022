@@ -1,25 +1,34 @@
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::{self, prelude::*, BufReader};
 use std::marker::PhantomData;
 use std::path::Path;
 use std::str::FromStr;
+use thiserror::Error;
 
-pub fn stream_ints<I, T>(input: I) -> impl Iterator<Item = T>
+#[derive(Error, Debug)]
+pub enum InputError<T> {
+    #[error("IO error")]
+    IoError(io::Error),
+    #[error("Conversion error")]
+    ConversionError(#[from] T),
+}
+
+pub fn stream_items<I, T>(input: I) -> impl Iterator<Item = Result<T, InputError<T::Err>>>
 where
     I: Read,
     T: FromStr,
 {
-    BufReader::new(input)
-        .lines()
-        .filter_map(Result::ok)
-        .map(|line| T::from_str(&line))
-        .filter_map(Result::ok)
+    BufReader::new(input).lines().map(|maybe_line| {
+        maybe_line
+            .map_err(|e| InputError::IoError(e))
+            .and_then(|l| Ok(l.parse()?))
+    })
 }
 
 pub fn stream_items_from_file<P: AsRef<Path>, T: FromStr>(
     path: P,
-) -> std::io::Result<impl Iterator<Item = T>> {
-    Ok(stream_ints(File::open(path)?))
+) -> std::io::Result<impl Iterator<Item = Result<T, InputError<T::Err>>>> {
+    Ok(stream_items(File::open(path)?))
 }
 
 pub struct BlockCollector<T, I, F> {

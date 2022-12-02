@@ -142,13 +142,13 @@ impl Strategy {
 
 fn part1<P: AsRef<Path>>(input: P) -> Result<usize> {
     Ok(stream_items_from_file::<P, GamePrediction>(input)?
-        .map(|g| g.score())
+        .map(|g| g.expect("Invalid game").score())
         .sum())
 }
 
 fn part2<P: AsRef<Path>>(input: P) -> Result<usize> {
     Ok(stream_items_from_file::<P, Strategy>(input)?
-       .map(|s| s.to_game_prediction().score())
+       .map(|s| s.expect("Invalid strategy").to_game_prediction().score())
        .sum())
 }
 
