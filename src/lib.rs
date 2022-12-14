@@ -5,6 +5,8 @@ use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
 
+pub mod field2d;
+
 #[derive(Error, Debug)]
 pub enum InputError<T> {
     #[error("IO error")]
